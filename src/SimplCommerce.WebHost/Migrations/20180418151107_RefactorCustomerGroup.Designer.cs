@@ -11,9 +11,10 @@ using System;
 namespace SimplCommerce.WebHost.Migrations
 {
     [DbContext(typeof(SimplDbContext))]
-    partial class SimplDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180418151107_RefactorCustomerGroup")]
+    partial class RefactorCustomerGroup
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -158,12 +159,6 @@ namespace SimplCommerce.WebHost.Migrations
                     b.Property<bool>("IsDeleted");
 
                     b.Property<bool>("IsPublished");
-
-                    b.Property<string>("MetaDescription");
-
-                    b.Property<string>("MetaKeywords");
-
-                    b.Property<string>("MetaTitle");
 
                     b.Property<string>("Name");
 
@@ -1145,12 +1140,6 @@ namespace SimplCommerce.WebHost.Migrations
                     b.Property<bool>("IsDeleted");
 
                     b.Property<bool>("IsPublished");
-
-                    b.Property<string>("MetaDescription");
-
-                    b.Property<string>("MetaKeywords");
-
-                    b.Property<string>("MetaTitle");
 
                     b.Property<string>("Name");
 
