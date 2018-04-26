@@ -18,8 +18,8 @@ namespace SimplCommerce.Module.Pricing.Tests
 {
     public class CouponServiceTest
     {
-        [Fact(DisplayName = "WithNoCoupon_ShouldReturns_CouponNotExistMessage")]
-        public async Task CouponService_WithNoCoupon_ShouldReturns_CouponNotExistMessage()
+        [Fact(DisplayName = "WithNoCoupon_ShouldReturn_CouponNotExistMessage")]
+        public async Task CouponService_WithNoCoupon_ShouldReturn_CouponNotExistMessage()
         {
             var user = MakeMockUser();
 
@@ -38,8 +38,8 @@ namespace SimplCommerce.Module.Pricing.Tests
             Assert.Equal($"The coupon {couponToApply} is not exist.", result.ErrorMessage);
         }
 
-        [Fact(DisplayName = "WithInactiveCoupon_ShouldReturns_CouponNotExistMessage")]
-        public async Task CouponService_WithInactiveCoupon_ShouldReturns_CouponNotExistMessage()
+        [Fact(DisplayName = "WithInactiveCoupon_ShouldReturn_CouponNotExistMessage")]
+        public async Task CouponService_WithInactiveCoupon_ShouldReturn_CouponNotExistMessage()
         {
             var user = MakeMockUser();
 
@@ -58,8 +58,8 @@ namespace SimplCommerce.Module.Pricing.Tests
             Assert.Equal($"The coupon {couponToApply} is not exist.", result.ErrorMessage);
         }
 
-        [Fact(DisplayName = "WithStartsOnInTheFuture_ShouldReturns_CouponCanBeUsedAfterStartOnDateMessage")]
-        public async Task CouponService_WithStartsOnInTheFuture_ShouldReturns_CouponCanBeUsedAfterStartOnDateMessage()
+        [Fact(DisplayName = "WithStartsOnInTheFuture_ShouldReturn_CouponCanBeUsedAfterStartOnDateMessage")]
+        public async Task CouponService_WithStartsOnInTheFuture_ShouldReturn_CouponCanBeUsedAfterStartOnDateMessage()
         {
             var user = MakeMockUser();
 
@@ -79,8 +79,8 @@ namespace SimplCommerce.Module.Pricing.Tests
             Assert.Equal($"The coupon {couponToApply} should be used after {coupon.CartRule.StartOn}.", result.ErrorMessage);
         }
 
-        [Fact(DisplayName = "WithExpiredCoupon_ShouldReturns_CouponExpiredMessage")]
-        public async Task CouponService_WithExpiredCoupon_ShouldReturns_CouponExpiredMessage()
+        [Fact(DisplayName = "WithExpiredCoupon_ShouldReturn_CouponExpiredMessage")]
+        public async Task CouponService_WithExpiredCoupon_ShouldReturn_CouponExpiredMessage()
         {
             var user = MakeMockUser();
 
@@ -101,8 +101,8 @@ namespace SimplCommerce.Module.Pricing.Tests
             Assert.Equal($"The coupon {couponToApply} is expired.", result.ErrorMessage);
         }
 
-        [Fact(DisplayName = "WithFullyConsumedCoupon_ShouldReturns_CouponAllUsedMessage")]
-        public async Task CouponService_WithFullyConsumedCoupon_ShouldReturns_CouponAllUsedMessage()
+        [Fact(DisplayName = "WithFullyConsumedCoupon_ShouldReturn_CouponAllUsedMessage")]
+        public async Task CouponService_WithFullyConsumedCoupon_ShouldReturn_CouponAllUsedMessage()
         {
             var user = MakeMockUser();
 
@@ -123,8 +123,8 @@ namespace SimplCommerce.Module.Pricing.Tests
             Assert.Equal($"The coupon {couponToApply} is all used.", result.ErrorMessage);
         }
 
-        [Fact(DisplayName = "WithFullyConsumedCouponForUser_ShouldReturns_CouponAllUsedMessage")]
-        public async Task CouponService_WithFullyConsumedCouponForUser_ShouldReturns_CouponAllUsedMessage()
+        [Fact(DisplayName = "WithFullyConsumedCouponForUser_ShouldReturn_CouponAllUsedMessage")]
+        public async Task CouponService_WithFullyConsumedCouponForUser_ShouldReturn_CouponAllUsedMessage()
         {
             var user = MakeMockUser();
 
@@ -166,8 +166,8 @@ namespace SimplCommerce.Module.Pricing.Tests
 
         }
 
-        [Fact(DisplayName = "WithDiscountAndFixedCartRule_ShouldReturns_SameDiscountAmount")]
-        public async Task CouponService_WithDiscountAndFixedCartRule_ShouldReturns_SameDiscountAmount()
+        [Fact(DisplayName = "WithDiscountAndFixedCartRule_ShouldReturn_SameDiscountAmount")]
+        public async Task CouponService_WithDiscountAndFixedCartRule_ShouldReturn_SameDiscountAmount()
         {
             var user = MakeMockUser();
 
@@ -191,8 +191,8 @@ namespace SimplCommerce.Module.Pricing.Tests
             Assert.Equal(coupon.CartRule.DiscountAmount, result.DiscountAmount);
         }
 
-        [Fact(DisplayName = "WithDiscountAndByPercentCartRule_ShouldReturns_DiscountedAmount")]
-        public async Task CouponService_WithDiscountAndByPercentCartRule_ShouldReturns_DiscountedAmount()
+        [Fact(DisplayName = "WithDiscountAndByPercentCartRule_ShouldReturn_DiscountedAmount")]
+        public async Task CouponService_WithDiscountAndByPercentCartRule_ShouldReturn_DiscountedAmount()
         {
             var user = MakeMockUser();
 
@@ -216,6 +216,33 @@ namespace SimplCommerce.Module.Pricing.Tests
 
             Assert.True(result.Succeeded);
             Assert.Equal(1M, result.DiscountAmount);
+        }
+
+        [Fact(DisplayName = "WithOneCouponAppliedToSomeProducts_ShouldReturn_CorrectCartTotal")]
+        public async Task CouponService_WithOneCouponAppliedToSomeProducts_ShouldReturn_CorrectCartTotal()
+        {
+            var user = MakeMockUser();
+
+            var coupon = MakeMockCoupon("test", usageLimitForCoupon: 2, usageLimitForUser: 2);
+            coupon.CartRule.StartOn = DateTime.Now.AddDays(-2);
+            coupon.CartRule.EndOn = DateTime.Now.AddDays(1);
+            coupon.CartRule.DiscountAmount = 10M;
+            coupon.CartRule.RuleToApply = "cart_fixed";
+            coupon.CartRule.Products.Add(new CartRuleProduct { ProductId = 1 }); 
+
+            var cartRuleUsage = MakeMockCartRuleUsage(user, coupon);
+
+            var couponService = MakeMockCouponService(user, coupon, cartRuleUsage);
+
+            var cartInfo = MakeMockCartInfoForCoupon();
+
+            string couponToApply = "test";
+
+            var result = await couponService.Validate(couponToApply, cartInfo);
+
+            Assert.True(result.Succeeded);
+            Assert.Equal(10M, result.DiscountAmount);
+            Assert.NotEqual(cartInfo.Items.Count, result.DiscountedProducts.Count);
         }
 
         #region MockDataHelpers
